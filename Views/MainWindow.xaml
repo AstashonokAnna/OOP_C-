@@ -1,0 +1,483 @@
+<Window x:Class="AdoreFlowerShop.Views.MainWindow"
+	   xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+	   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+	   xmlns:conv="clr-namespace:AdoreFlowerShop.Converters"
+	   xmlns:sys="clr-namespace:System;assembly=System.Runtime"
+	   x:Name="ThisWindow"
+	   Title="{DynamicResource AppTitle}" Height="700" Width="1200"
+	   WindowStartupLocation="CenterScreen"
+	   Background="{DynamicResource BackgroundBrush}">
+
+	<Window.Resources>
+		<conv:BoolToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+		<conv:CountryToFlagConverter x:Key="CountryToFlagConverter"/>
+		<conv:ByteArrayToImageSourceConverter x:Key="ByteArrayToImageSourceConverter"/>
+		<conv:BoolToInStockConverter x:Key="BoolToInStockConverter"/>
+		<conv:GridNumberConverter x:Key="GridNumberConverter"/>
+	</Window.Resources>
+
+	<Grid>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="Auto"/>
+			<RowDefinition Height="Auto"/>
+			<RowDefinition Height="Auto"/>
+			<RowDefinition Height="*"/>
+		</Grid.RowDefinitions>
+
+		<Border Grid.Row="0" Padding="14,10" Background="{DynamicResource SurfaceBrush}"
+		        BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1">
+			<Grid>
+				<StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+					<TextBlock Text="ADORE" FontSize="22" FontWeight="SemiBold"
+					           Foreground="{DynamicResource PrimaryBrush}" VerticalAlignment="Center"/>
+					<TextBlock Text="  ·  " Foreground="{DynamicResource BorderBrush}" Margin="6,0" VerticalAlignment="Center"/>
+					<TextBlock Text="интернет-магазин цветов" FontSize="14"
+					           Foreground="{DynamicResource TextSecondaryBrush}" VerticalAlignment="Center"/>
+				</StackPanel>
+				<TextBlock HorizontalAlignment="Right" VerticalAlignment="Center" FontSize="12"
+				           Foreground="{DynamicResource TextSecondaryBrush}" Text="Свежие букеты · доставка · забота о деталях"/>
+			</Grid>
+		</Border>
+
+		<!-- Меню -->
+		<Menu Grid.Row="1">
+			<MenuItem Header="{DynamicResource File}">
+				<MenuItem Header="{DynamicResource Login}" Command="{Binding LoginCommand}"/>
+				<MenuItem Header="{DynamicResource Logout}" Command="{Binding LogoutCommand}"/>
+				<Separator/>
+				<MenuItem Header="{DynamicResource Exit}" Command="{Binding ExitCommand}"/>
+			</MenuItem>
+			<MenuItem Header="Личный кабинет" Command="{Binding ProfileCommand}"/>
+			<MenuItem Header="Администрирование" Visibility="{Binding IsAdmin, Converter={StaticResource BoolToVisibilityConverter}}">
+				<MenuItem Header="Таблицы БД (DataGrid)" Command="{Binding OpenAdminDbCommand}"/>
+			</MenuItem>
+		</Menu>
+
+		<!-- Панель инструментов -->
+		<ToolBar Grid.Row="2">
+			<Button Content="{DynamicResource AddFlower}" Command="{Binding AddCommand}" Style="{StaticResource ToolBarButton}"/>
+			<Button Content="{DynamicResource EditFlower}" Command="{Binding EditCommand}" Style="{StaticResource ToolBarButton}"/>
+			<Button Content="{DynamicResource DeleteFlower}" Command="{Binding DeleteCommand}" Style="{StaticResource ToolBarButton}"/>
+			<Separator/>
+			<Label Content="{DynamicResource Search}" VerticalAlignment="Center"/>
+			<TextBox Text="{Binding SearchText, UpdateSourceTrigger=PropertyChanged}" Width="150" Margin="2" MaxLength="50"/>
+			<Separator/>
+			<Label Content="{DynamicResource Category}" VerticalAlignment="Center"/>
+			<ComboBox ItemsSource="{Binding Categories}" SelectedItem="{Binding SelectedCategory}" Width="200" Margin="2"/>
+		</ToolBar>
+
+		<!-- Основная область -->
+		<Grid Grid.Row="3" Margin="10">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="*"/>
+				<ColumnDefinition Width="380"/>
+			</Grid.ColumnDefinitions>
+
+			<!-- Список товаров -->
+			<ListBox Grid.Column="0" ItemsSource="{Binding FilteredFlowers}"
+                     SelectedItem="{Binding SelectedFlower}" Margin="5"
+                     Style="{StaticResource FlowerListBox}">
+				<ListBox.ItemTemplate>
+					<DataTemplate>
+						<Border BorderBrush="{DynamicResource BorderBrush}"
+                                BorderThickness="1"
+                                CornerRadius="6"
+                                Margin="2,0"
+                                Background="{DynamicResource CardBackgroundBrush}"
+                                Padding="12">
+							<Grid>
+								<Grid.ColumnDefinitions>
+									<ColumnDefinition Width="80"/>
+									<ColumnDefinition Width="*"/>
+								</Grid.ColumnDefinitions>
+								<Border Grid.Column="0" Width="70" Height="70"
+                                        Background="{DynamicResource SurfaceBrush}"
+                                        BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1">
+									<Image Source="{Binding MainImageBytes, Converter={StaticResource ByteArrayToImageSourceConverter}}" Stretch="UniformToFill"/>
+								</Border>
+								<StackPanel Grid.Column="1" Margin="10,0,0,0">
+									<TextBlock Text="{Binding ShortName}" FontWeight="Bold" FontSize="14"
+                                               Foreground="{DynamicResource TextBrush}"/>
+
+									<WrapPanel>
+										<TextBlock Text="{DynamicResource Price}" FontSize="12"
+                                                   Foreground="{DynamicResource TextSecondaryBrush}"/>
+										<TextBlock Text=":" Foreground="{DynamicResource TextSecondaryBrush}"/>
+										<TextBlock Text="{Binding Price, StringFormat={}{0:C}}"
+                                                   Foreground="{DynamicResource PrimaryBrush}" FontWeight="Bold" Margin="5,0"/>
+										<TextBlock Text="|" Foreground="{DynamicResource BorderBrush}" Margin="8,0"/>
+										<StackPanel Orientation="Horizontal">
+											<StackPanel.Style>
+												<Style TargetType="StackPanel">
+													<Setter Property="Visibility" Value="Visible"/>
+													<Style.Triggers>
+														<DataTrigger Binding="{Binding Rating}" Value="0">
+															<Setter Property="Visibility" Value="Collapsed"/>
+														</DataTrigger>
+													</Style.Triggers>
+												</Style>
+											</StackPanel.Style>
+											<TextBlock Text="{Binding Rating, StringFormat={}{0:F1}}"
+											           Foreground="#FFC107" FontWeight="Bold"/>
+											<TextBlock Text="★" Foreground="#FFC107" FontSize="12" Margin="2,0"/>
+										</StackPanel>
+									</WrapPanel>
+									<WrapPanel Margin="0,5,0,0">
+										<TextBlock Text="{DynamicResource InStock}" FontSize="11"
+                                                   Foreground="{DynamicResource TextSecondaryBrush}"/>
+										<TextBlock Text=":" Foreground="{DynamicResource TextSecondaryBrush}"/>
+										<TextBlock Text="{Binding InStock, Converter={StaticResource BoolToInStockConverter}}" Margin="5,0">
+											<TextBlock.Style>
+												<Style TargetType="TextBlock">
+													<Setter Property="Foreground" Value="#F44336"/>
+													<Setter Property="FontWeight" Value="Bold"/>
+													<Style.Triggers>
+														<DataTrigger Binding="{Binding InStock}" Value="True">
+															<Setter Property="Foreground" Value="#4CAF50"/>
+														</DataTrigger>
+													</Style.Triggers>
+												</Style>
+											</TextBlock.Style>
+										</TextBlock>
+									</WrapPanel>
+								</StackPanel>
+							</Grid>
+						</Border>
+					</DataTemplate>
+				</ListBox.ItemTemplate>
+			</ListBox>
+
+			<!-- Детализация -->
+			<ScrollViewer Grid.Column="1" Margin="5">
+				<Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="1" CornerRadius="6"
+                        Background="{DynamicResource SurfaceBrush}" Padding="15">
+					<StackPanel DataContext="{Binding SelectedFlower}">
+						<TextBlock Text="{DynamicResource Details}" FontSize="18" FontWeight="Bold"
+                                   Foreground="{DynamicResource PrimaryBrush}" Margin="0,0,0,15"/>
+
+						<Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,0,0,1"
+                                Padding="0,0,0,10" Margin="0,0,0,10">
+							<StackPanel>
+								<TextBlock Text="{DynamicResource ShortName}" FontWeight="Bold"
+                                           Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11"/>
+								<TextBox Text="{Binding ShortName, UpdateSourceTrigger=PropertyChanged}"
+								         MaxLength="80"
+                                         Margin="0,3,0,8"
+                                         IsEnabled="{Binding DataContext.IsAdmin, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"/>
+
+								<TextBlock Text="{DynamicResource Description}" FontWeight="Bold"
+                                           Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11"/>
+								<TextBox Text="{Binding Description, UpdateSourceTrigger=PropertyChanged}"
+								         MaxLength="2000"
+                                         AcceptsReturn="True" TextWrapping="Wrap" Height="80" Margin="0,3,0,8"
+                                         IsEnabled="{Binding DataContext.IsAdmin, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"/>
+							</StackPanel>
+						</Border>
+
+						<Grid Margin="0,0,0,10">
+							<Grid.ColumnDefinitions>
+								<ColumnDefinition Width="*"/>
+								<ColumnDefinition Width="*"/>
+							</Grid.ColumnDefinitions>
+
+							<StackPanel Grid.Column="0" Margin="0,0,10,0">
+								<TextBlock Text="{DynamicResource Category}" FontWeight="Bold"
+                                            Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11"/>
+								<ComboBox ItemsSource="{Binding DataContext.Categories, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"
+								          SelectedItem="{Binding Category, UpdateSourceTrigger=PropertyChanged}"
+								          IsEditable="False"
+								          Margin="0,3,0,8"
+								          IsEnabled="{Binding DataContext.IsAdmin, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" Height="29"/>
+
+								<TextBlock Text="{DynamicResource Price}" FontWeight="Bold"
+                                            Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11"/>
+								<TextBox Margin="0,3,0,8"
+                                         IsEnabled="{Binding DataContext.IsAdmin, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" Height="29">
+									<TextBox.Text>
+										<Binding Path="Price"
+										         Converter="{StaticResource GridNumberConverter}"
+										         ConverterParameter="P"
+										         UpdateSourceTrigger="PropertyChanged"/>
+									</TextBox.Text>
+								</TextBox>
+
+								<TextBlock Text="{DynamicResource Color}" FontWeight="Bold"
+                                            Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11"/>
+								<TextBox Text="{Binding Color, UpdateSourceTrigger=PropertyChanged}"
+								         MaxLength="12"
+                                         Margin="0,3,0,8"
+                                         IsEnabled="{Binding DataContext.IsAdmin, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" Height="28"/>
+							</StackPanel>
+
+							<StackPanel Grid.Column="1">
+								<TextBlock Text="{DynamicResource Quantity}" FontWeight="Bold"
+                                           Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11"/>
+								<TextBox Text="{Binding Quantity, UpdateSourceTrigger=PropertyChanged}"
+                                         Margin="0,3,0,8"
+                                         IsEnabled="{Binding DataContext.IsAdmin, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"/>
+
+								<TextBlock Text="{DynamicResource Rating}" FontWeight="Bold"
+                                           Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11"/>
+								<TextBox Text="{Binding Rating, StringFormat={}{0:F1}}"
+                                         Margin="0,3,0,8"
+                                         IsReadOnly="True"
+                                         IsTabStop="False"
+                                         Background="{DynamicResource SurfaceBrush}"
+                                         Height="28"/>
+
+								<TextBlock Text="{DynamicResource Country}" FontWeight="Bold"
+                                           Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11"/>
+								<DockPanel Margin="0,3,0,8" LastChildFill="True">
+									<TextBlock DockPanel.Dock="Right"
+									           Margin="8,0,0,0"
+									           VerticalAlignment="Center"
+									           FontSize="18"
+									           Text="{Binding Country, Converter={StaticResource CountryToFlagConverter}}"/>
+									<TextBox Text="{Binding Country, UpdateSourceTrigger=PropertyChanged}"
+									         MaxLength="60"
+									         IsEnabled="{Binding DataContext.IsAdmin, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" Height="28"/>
+								</DockPanel>
+							</StackPanel>
+						</Grid>
+
+						<!-- Заказ (для клиента) -->
+						<Border BorderBrush="{DynamicResource BorderBrush}"
+						        BorderThickness="1"
+						        Background="{DynamicResource SurfaceBrush}"
+						        Padding="12"
+						        Margin="0,0,0,10">
+							<Border.Style>
+								<Style TargetType="Border">
+									<Setter Property="Visibility" Value="Visible"/>
+									<Style.Triggers>
+										<DataTrigger Binding="{Binding DataContext.IsLoggedIn, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" Value="False">
+											<Setter Property="Visibility" Value="Collapsed"/>
+										</DataTrigger>
+									</Style.Triggers>
+								</Style>
+							</Border.Style>
+
+							<StackPanel>
+								<TextBlock Text="{DynamicResource OrderSection}"
+								           FontSize="14"
+								           FontWeight="Bold"
+								           Foreground="{DynamicResource PrimaryBrush}"/>
+								<TextBlock Margin="0,4,0,0"
+								           Foreground="{DynamicResource TextSecondaryBrush}"
+								           FontSize="11"
+								           Text="{DynamicResource OrderHint}"/>
+
+								<Grid Margin="0,10,0,0">
+									<Grid.ColumnDefinitions>
+										<ColumnDefinition Width="*"/>
+										<ColumnDefinition Width="Auto"/>
+									</Grid.ColumnDefinitions>
+								<TextBlock Grid.Column="0"
+								           Foreground="{DynamicResource TextSecondaryBrush}"
+								           Text="{Binding DataContext.OrderUnitPriceUsd, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}, StringFormat={}{0} $ / шт.}"/>
+									<TextBlock Grid.Column="1"
+								           Foreground="{DynamicResource TextSecondaryBrush}"
+								           Text="{Binding DataContext.OrderMaxText, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"/>
+								</Grid>
+
+								<Grid Margin="0,10,0,0">
+									<Grid.ColumnDefinitions>
+										<ColumnDefinition Width="*"/>
+										<ColumnDefinition Width="Auto"/>
+									</Grid.ColumnDefinitions>
+
+									<Slider Grid.Column="0"
+									        Minimum="{Binding DataContext.OrderSliderMinimum, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"
+									        Maximum="{Binding DataContext.OrderSliderMaximum, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"
+									        Value="{Binding DataContext.OrderQuantity, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}, UpdateSourceTrigger=PropertyChanged}"
+									        IsSnapToTickEnabled="True"
+									        TickFrequency="1">
+										<Slider.Style>
+											<Style TargetType="Slider">
+												<Setter Property="IsEnabled" Value="True"/>
+												<Style.Triggers>
+													<DataTrigger Binding="{Binding DataContext.OrderMaxQuantity, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" Value="0">
+														<Setter Property="IsEnabled" Value="False"/>
+													</DataTrigger>
+												</Style.Triggers>
+											</Style>
+										</Slider.Style>
+									</Slider>
+
+									<TextBox Grid.Column="1"
+									         Width="80"
+									         Margin="10,0,0,0"
+									         TextAlignment="Center"
+									         Text="{Binding DataContext.OrderQuantity, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}, UpdateSourceTrigger=PropertyChanged}">
+										<TextBox.Style>
+											<Style TargetType="TextBox">
+												<Setter Property="IsEnabled" Value="True"/>
+												<Style.Triggers>
+													<DataTrigger Binding="{Binding DataContext.OrderMaxQuantity, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}" Value="0">
+														<Setter Property="IsEnabled" Value="False"/>
+													</DataTrigger>
+												</Style.Triggers>
+											</Style>
+										</TextBox.Style>
+									</TextBox>
+								</Grid>
+
+								<Grid Margin="0,8,0,0">
+									<Grid.ColumnDefinitions>
+										<ColumnDefinition Width="Auto"/>
+										<ColumnDefinition Width="*"/>
+										<ColumnDefinition Width="Auto"/>
+										<ColumnDefinition Width="*"/>
+									</Grid.ColumnDefinitions>
+									<TextBlock Grid.Column="0" Text="Дата:" VerticalAlignment="Center"
+									           Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12"/>
+									<DatePicker Grid.Column="1" Margin="6,0,10,0"
+									            DisplayDateStart="{x:Static sys:DateTime.Today}"
+									            SelectedDate="{Binding DataContext.DeliveryDate, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"/>
+									<TextBlock Grid.Column="2" Text="Время:" VerticalAlignment="Center"
+									           Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12"/>
+									<ComboBox Grid.Column="3" Margin="6,0,0,0"
+									          ItemsSource="{Binding DataContext.TimeSlots, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"
+									          SelectedItem="{Binding DataContext.DeliveryTime, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"/>
+								</Grid>
+
+								<WrapPanel Margin="0,8,0,0">
+									<TextBlock Text="Адрес:" VerticalAlignment="Center"
+									           Foreground="{DynamicResource TextSecondaryBrush}" FontSize="12"/>
+									<TextBox Width="250" Margin="6,0,0,0" MaxLength="500"
+									         Text="{Binding DataContext.Address, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}, UpdateSourceTrigger=PropertyChanged}"/>
+								</WrapPanel>
+
+								<TextBlock Margin="0,8,0,0"
+								           FontWeight="SemiBold"
+								           Foreground="{DynamicResource TextBrush}"
+								           Text="{Binding DataContext.OrderTotalUsd, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}, StringFormat={}{0} $}"/>
+
+								<StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
+									<Button Content="{DynamicResource SaveOrder}"
+									        Command="{Binding DataContext.SaveOrderCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"
+									        Style="{StaticResource SaveButton}"/>
+								</StackPanel>
+							</StackPanel>
+						</Border>
+
+						<!-- Отзывы -->
+						<Border BorderBrush="{DynamicResource BorderBrush}"
+						        BorderThickness="1"
+						        Background="{DynamicResource SurfaceBrush}"
+						        Padding="12"
+						        Margin="0,0,0,10">
+							<StackPanel>
+								<TextBlock Text="{DynamicResource Reviews}"
+								           FontSize="14"
+								           FontWeight="Bold"
+								           Foreground="{DynamicResource PrimaryBrush}"/>
+								<ItemsControl ItemsSource="{Binding DataContext.Reviews, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"
+								              Margin="0,6,0,0">
+									<ItemsControl.ItemTemplate>
+										<DataTemplate>
+											<Border BorderBrush="{DynamicResource BorderBrush}"
+											        BorderThickness="0,0,0,1"
+											        Padding="0,4,0,4" Margin="0,2,0,2">
+												<StackPanel>
+													<WrapPanel>
+														<TextBlock Text="{Binding UserName}" FontWeight="Bold"
+														           Foreground="{DynamicResource TextBrush}" FontSize="12"/>
+														<TextBlock Text="  ·  " Foreground="{DynamicResource BorderBrush}"/>
+														<TextBlock Text="{Binding Rating, StringFormat={}{0}★}"
+														           Foreground="#FFC107" FontWeight="Bold" FontSize="12"/>
+														<TextBlock Text="  ·  " Foreground="{DynamicResource BorderBrush}"/>
+														<TextBlock Text="{Binding CreatedAt}"
+														           Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11"/>
+													</WrapPanel>
+													<TextBlock Text="{Binding Comment}"
+													           Foreground="{DynamicResource TextBrush}"
+													           TextWrapping="Wrap" FontSize="12"
+													           Margin="0,2,0,0"/>
+												</StackPanel>
+											</Border>
+										</DataTemplate>
+									</ItemsControl.ItemTemplate>
+								</ItemsControl>
+								<Button Content="{DynamicResource LeaveReview}"
+								        Command="{Binding DataContext.AddReviewCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"
+								        Margin="0,8,0,0"
+								        Style="{StaticResource SaveButton}"/>
+							</StackPanel>
+						</Border>
+
+						<Border BorderBrush="{DynamicResource BorderBrush}" BorderThickness="0,1,0,0"
+                                Padding="0,10,0,0" Margin="0,10,0,0">
+							<StackPanel>
+								<WrapPanel>
+									<CheckBox Content="{DynamicResource InStock}"
+                                              IsChecked="{Binding InStock, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                              Margin="0,5,20,5" FontSize="12"
+                                              IsEnabled="{Binding DataContext.IsAdmin, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"/>
+									<TextBlock Text="{DynamicResource Discount}" FontWeight="Bold"
+                                               Foreground="{DynamicResource TextSecondaryBrush}"
+                                               VerticalAlignment="Center" FontSize="11"/>
+									<TextBlock Text=":" Margin="5,0" Foreground="{DynamicResource TextSecondaryBrush}"/>
+									<TextBox Text="{Binding Discount, UpdateSourceTrigger=PropertyChanged}"
+                                             Width="60" Margin="5,0" TextAlignment="Center"
+                                             IsEnabled="{Binding DataContext.IsAdmin, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"/>
+									<TextBlock Text="%" VerticalAlignment="Center" FontSize="12"/>
+								</WrapPanel>
+
+								<!-- Новая штука: Slider скидки + статус -->
+								<StackPanel Margin="0,10,0,0">
+									<TextBlock Text="Скидка ползунком" FontWeight="Bold"
+                                               Foreground="{DynamicResource TextSecondaryBrush}" FontSize="11"/>
+
+									<Slider x:Name="DiscountSlider"
+                                            Minimum="0" Maximum="100"
+                                            Value="{Binding Discount, UpdateSourceTrigger=PropertyChanged}"
+                                            IsEnabled="{Binding DataContext.IsAdmin, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"
+                                            TickFrequency="10" IsSnapToTickEnabled="True"
+                                            Margin="0,6,0,0"/>
+
+									<TextBlock Margin="0,6,0,0" FontWeight="SemiBold">
+										<TextBlock.Style>
+											<Style TargetType="TextBlock">
+												<Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+												<Setter Property="Text" Value="Скидка задана"/>
+												<Style.Triggers>
+													<!-- DataTrigger: отслеживаем значение скидки -->
+													<DataTrigger Binding="{Binding Discount}" Value="0">
+														<Setter Property="Text" Value="Скидка 0% (нулевое значение)"/>
+														<Setter Property="Foreground" Value="{DynamicResource WarningBrush}"/>
+													</DataTrigger>
+													<DataTrigger Binding="{Binding Discount}" Value="100">
+														<Setter Property="Text" Value="Скидка 100% (MAX)"/>
+														<Setter Property="Foreground" Value="{DynamicResource ErrorBrush}"/>
+													</DataTrigger>
+												</Style.Triggers>
+											</Style>
+										</TextBlock.Style>
+									</TextBlock>
+								</StackPanel>
+
+							</StackPanel>
+						</Border>
+
+						<Button Content="Выбрать фото…"
+						        Margin="0,0,0,10"
+						        HorizontalAlignment="Left"
+						        Style="{StaticResource ToolBarButton}"
+						        Command="{Binding DataContext.PickFlowerPhotoCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"
+						        Visibility="{Binding DataContext.CanPickFlowerPhoto, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}, Converter={StaticResource BoolToVisibilityConverter}}"/>
+
+						<StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,15,0,0">
+							<Button Content="{DynamicResource Save}"
+                                    Command="{Binding DataContext.SaveCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"
+                                    Style="{StaticResource SaveButton}"/>
+							<Button Content="{DynamicResource Cancel}"
+                                    Command="{Binding DataContext.CancelCommand, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"
+                                    Style="{StaticResource ToolBarButton}" Margin="5,0,0,0"/>
+						</StackPanel>
+					</StackPanel>
+				</Border>
+			</ScrollViewer>
+		</Grid>
+	</Grid>
+</Window>
