@@ -1,0 +1,177 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+				   xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+	<!-- ========== КИСТИ ДЛЯ ТЕМ ========== -->
+
+	<!-- ADORE: тёплая палитра цветочного бутика -->
+	<SolidColorBrush x:Key="PrimaryBrush" Color="#B76E79"/>
+	<SolidColorBrush x:Key="PrimaryDarkBrush" Color="#8E4A55"/>
+	<SolidColorBrush x:Key="AccentBrush" Color="#C9A962"/>
+	<SolidColorBrush x:Key="BackgroundBrush" Color="#FFFCFA"/>
+	<SolidColorBrush x:Key="SurfaceBrush" Color="#FFF5F7"/>
+	<SolidColorBrush x:Key="BorderBrush" Color="#E8D5DC"/>
+	<SolidColorBrush x:Key="TextBrush" Color="#2D2A32"/>
+	<SolidColorBrush x:Key="TextSecondaryBrush" Color="#6E6570"/>
+	<SolidColorBrush x:Key="MenuBackgroundBrush" Color="#FFF0F3"/>
+	<SolidColorBrush x:Key="ToolBarBackgroundBrush" Color="#F5E6EA"/>
+	<SolidColorBrush x:Key="CardBackgroundBrush" Color="#FFFFFF"/>
+	<SolidColorBrush x:Key="ErrorBrush" Color="#F44336"/>
+	<SolidColorBrush x:Key="WarningBrush" Color="#FFC107"/>
+	<SolidColorBrush x:Key="SuccessBrush" Color="#4CAF50"/>
+
+    <!-- ========== СТИЛИ ========== -->
+
+    <Style TargetType="Window">
+        <Setter Property="Background" Value="{DynamicResource BackgroundBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+        <Setter Property="FontFamily" Value="Segoe UI"/>
+        <Setter Property="FontSize" Value="13.5"/>
+		<Style.Triggers>
+			<!-- EventTrigger: без изменения поведения (Opacity остаётся 1) -->
+			<EventTrigger RoutedEvent="FrameworkElement.Loaded">
+				<BeginStoryboard>
+					<Storyboard>
+						<DoubleAnimation Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0"/>
+					</Storyboard>
+				</BeginStoryboard>
+			</EventTrigger>
+		</Style.Triggers>
+    </Style>
+
+    <Style TargetType="Menu">
+        <Setter Property="Background" Value="{DynamicResource MenuBackgroundBrush}"/>
+        <Setter Property="FontSize" Value="13"/>
+    </Style>
+
+    <Style TargetType="MenuItem">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+        <Setter Property="Padding" Value="10,5"/>
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="{DynamicResource PrimaryBrush}"/>
+                <Setter Property="Foreground" Value="White"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style TargetType="ToolBar">
+        <Setter Property="Background" Value="{DynamicResource ToolBarBackgroundBrush}"/>
+        <Setter Property="Padding" Value="5"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+        <Setter Property="BorderThickness" Value="0,0,0,1"/>
+    </Style>
+
+    <Style x:Key="ToolBarButton" TargetType="Button">
+        <Setter Property="Padding" Value="12,5"/>
+        <Setter Property="Margin" Value="2"/>
+        <Setter Property="Background" Value="{DynamicResource SurfaceBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Style.Triggers>
+			<!-- DataTrigger: реагирует на данные (IsEnabled у самого элемента) -->
+			<DataTrigger Binding="{Binding IsEnabled, RelativeSource={RelativeSource Self}}" Value="False">
+				<Setter Property="Opacity" Value="0.6"/>
+				<Setter Property="Cursor" Value="Arrow"/>
+			</DataTrigger>
+
+			<!-- MultiTrigger: объединяет несколько условий -->
+			<MultiTrigger>
+				<MultiTrigger.Conditions>
+					<Condition Property="IsMouseOver" Value="True"/>
+					<Condition Property="IsEnabled" Value="True"/>
+				</MultiTrigger.Conditions>
+				<Setter Property="Background" Value="{DynamicResource PrimaryBrush}"/>
+				<Setter Property="Foreground" Value="White"/>
+			</MultiTrigger>
+
+			<!-- MultiTrigger (ещё один): когда кнопку нажимают и она активна -->
+			<MultiTrigger>
+				<MultiTrigger.Conditions>
+					<Condition Property="IsPressed" Value="True"/>
+					<Condition Property="IsEnabled" Value="True"/>
+				</MultiTrigger.Conditions>
+				<Setter Property="Background" Value="{DynamicResource PrimaryDarkBrush}"/>
+				<Setter Property="Foreground" Value="White"/>
+			</MultiTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style TargetType="TextBox">
+        <Setter Property="Background" Value="{DynamicResource BackgroundBrush}"/>
+        <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+        <Setter Property="BorderBrush" Value="{DynamicResource BorderBrush}"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Padding" Value="8,5"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="BorderBrush" Value="{DynamicResource PrimaryBrush}"/>
+            </Trigger>
+            <Trigger Property="IsFocused" Value="True">
+                <Setter Property="BorderBrush" Value="{DynamicResource PrimaryDarkBrush}"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style TargetType="Label">
+        <Setter Property="Foreground" Value="{DynamicResource TextBrush}"/>
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="VerticalAlignment" Value="Center"/>
+    </Style>
+
+    <Style x:Key="FlowerListBoxItem" TargetType="ListBoxItem">
+        <Setter Property="Padding" Value="2"/>
+        <Setter Property="Margin" Value="0,4"/>
+        <Setter Property="HorizontalContentAlignment" Value="Stretch"/>
+        <Setter Property="SnapsToDevicePixels" Value="True"/>
+        <Setter Property="FocusVisualStyle" Value="{x:Null}"/>
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="#18B76E79"/>
+            </Trigger>
+            <Trigger Property="IsSelected" Value="True">
+                <Setter Property="Background" Value="#28B76E79"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+
+    <Style x:Key="FlowerListBox" TargetType="ListBox">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="ScrollViewer.HorizontalScrollBarVisibility" Value="Disabled"/>
+        <Setter Property="ScrollViewer.CanContentScroll" Value="False"/>
+        <Setter Property="ItemContainerStyle" Value="{StaticResource FlowerListBoxItem}"/>
+    </Style>
+
+    <Style x:Key="LinkLikeButton" TargetType="Button">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Foreground" Value="{DynamicResource PrimaryBrush}"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Padding" Value="4,6"/>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="SaveButton" TargetType="Button">
+        <Setter Property="Background" Value="{DynamicResource PrimaryBrush}"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="Padding" Value="12,6"/>
+        <Setter Property="Margin" Value="2"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Style.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Setter Property="Background" Value="{DynamicResource PrimaryDarkBrush}"/>
+            </Trigger>
+        </Style.Triggers>
+    </Style>
+</ResourceDictionary>
